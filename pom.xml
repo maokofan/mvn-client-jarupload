@@ -31,6 +31,7 @@
 	</dependencies>
 
 	<build>
+	<defaultGoal>compile</defaultGoal>
 		<plugins>
 			<!-- Package as an executable jar/war -->
 			<plugin>

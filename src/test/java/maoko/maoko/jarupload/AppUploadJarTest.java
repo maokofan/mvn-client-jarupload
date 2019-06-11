@@ -7,7 +7,7 @@ import junit.framework.TestSuite;
 /**
  * Unit test for simple App.
  */
-public class UploadJarAppTest 
+public class AppUploadJarTest 
     extends TestCase
 {
     /**
@@ -15,7 +15,7 @@ public class UploadJarAppTest
      *
      * @param testName name of the test case
      */
-    public UploadJarAppTest( String testName )
+    public AppUploadJarTest( String testName )
     {
         super( testName );
     }
@@ -25,7 +25,7 @@ public class UploadJarAppTest
      */
     public static Test suite()
     {
-        return new TestSuite( UploadJarAppTest.class );
+        return new TestSuite( AppUploadJarTest.class );
     }
 
     /**

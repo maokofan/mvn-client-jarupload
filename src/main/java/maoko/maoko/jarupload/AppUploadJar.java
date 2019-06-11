@@ -17,7 +17,7 @@ import maoko.maoko.jarupload.conf.RepositoryUser;
  *
  */
 @SpringBootApplication
-public class UploadJarApp implements CommandLineRunner {
+public class AppUploadJar implements CommandLineRunner {
 
 	@Autowired
 	private AppConf appConf;
@@ -26,13 +26,14 @@ public class UploadJarApp implements CommandLineRunner {
 	private ScanDirExc exc;
 
 	public static void main(String[] args) {
-		SpringApplication.run(UploadJarApp.class, args);
+		SpringApplication.run(AppUploadJar.class, args);
 	}
 
 	public void run(String... args) throws Exception {
 		RepositoryUser user = new RepositoryUser(appConf.user_id, appConf.user_name, appConf.user_password);
+		UploadJarFiles.init();
 		MvnSettings.init(user);
 		MvnCmd.init(MvnSettings.SETTINGS_PATH, appConf.repository_id, appConf.repository_durl);
-		exc.start();
+		exc.start(appConf);
 	}
 }

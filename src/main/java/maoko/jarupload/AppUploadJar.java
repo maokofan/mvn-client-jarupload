@@ -1,4 +1,4 @@
-package maoko.maoko.jarupload;
+package maoko.jarupload;
 
 import java.io.File;
 
@@ -7,9 +7,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import maoko.maoko.jarupload.conf.AppConf;
-import maoko.maoko.jarupload.conf.MvnCmd;
-import maoko.maoko.jarupload.conf.MvnSettings;
+import maoko.jarupload.conf.AppConf;
+import maoko.jarupload.conf.MvnCmd;
+import maoko.jarupload.conf.MvnSettings;
 
 /**
  * 需要配置maven环境变量
@@ -22,6 +22,8 @@ import maoko.maoko.jarupload.conf.MvnSettings;
 @SpringBootApplication
 public class AppUploadJar implements CommandLineRunner {
 	public static AppConf appConf;
+	public static String TMP_DIR;// 文件临时根目录
+
 	@Autowired
 	public AppConf appConf_obj;
 

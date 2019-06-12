@@ -1,9 +1,9 @@
-package maoko.maoko.jarupload.conf;
+package maoko.jarupload.conf;
 
 import java.io.File;
 import java.io.PrintWriter;
 
-import maoko.maoko.jarupload.AppUploadJar;
+import maoko.jarupload.AppUploadJar;
 
 /**
  * 生成本地的mvn settings

@@ -1,4 +1,4 @@
-package maoko.maoko.jarupload.conf;
+package maoko.jarupload.conf;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package maoko.maoko.jarupload.conf;
+package maoko.jarupload.conf;
 
 /**
  * @dscr 私有库登录信息

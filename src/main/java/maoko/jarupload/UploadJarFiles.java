@@ -1,4 +1,4 @@
-package maoko.maoko.jarupload;
+package maoko.jarupload;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import maoko.maoko.jarupload.conf.MvnCmd;
+import maoko.jarupload.conf.MvnCmd;
 
 /**
  * 上传一个jar,包含多个文件
@@ -42,6 +42,9 @@ public class UploadJarFiles implements Runnable {
 	}
 
 	public void run() {
+		// 判断路径过长移动到临时文件夹
+		copyToTmpDir();
+
 		File pom = null;
 		File jar = null;
 		File source = null;
@@ -137,4 +140,7 @@ public class UploadJarFiles implements Runnable {
 		}
 	}
 
+	private void copyToTmpDir() {
+
+	}
 }

@@ -1,6 +1,6 @@
-package maoko.maoko.jarupload.conf;
+package maoko.jarupload.conf;
 
-import maoko.maoko.jarupload.AppUploadJar;
+import maoko.jarupload.AppUploadJar;
 
 /**
  * @dscr mvn 命令

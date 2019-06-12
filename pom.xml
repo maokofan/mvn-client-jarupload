@@ -20,7 +20,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>
-			<version>2.1.5.RELEASE</version>
+			<version>1.5.9.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -31,7 +36,7 @@
 	</dependencies>
 
 	<build>
-	<defaultGoal>compile</defaultGoal>
+		<defaultGoal>compile</defaultGoal>
 		<plugins>
 			<!-- Package as an executable jar/war -->
 			<plugin>

@@ -24,10 +24,12 @@ public class UploadJarFiles implements Runnable {
 
 	private static Logger logger = null;
 	private static Pattern DATE_PATTERN = null;
+	private static File workDir = null;
 
 	public static void init() {
 		logger = LoggerFactory.getLogger(UploadJarFiles.class);
 		DATE_PATTERN = Pattern.compile("-[\\d]{8}\\.[\\d]{6}-");
+		workDir = new File(AppUploadJar.appConf.maven_bin_dir);
 	}
 
 	private File jarDir;
@@ -95,41 +97,42 @@ public class UploadJarFiles implements Runnable {
 	public void deploy(final File pom, final File jar, final File source, final File javadoc) {
 		// logger.info("ready to upload jar dir:" + pom.getAbsolutePath());
 		StringBuffer cmd = new StringBuffer(MvnCmd.BASE_CMD_STR);
-		cmd.append(" -DpomFile=").append(pom.getPath());
-		cmd.append(" -Dpackaging=jar -Dfile=").append(jar.getPath());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
-		cmd.append(" -Dfile=").append(pom.getPath());
+		cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
+		cmd.append(" -DpomFile=").append(pom.getName());
+		cmd.append(" -Dpackaging=jar");
 		if (source != null) {
-			cmd.append(" -Dsources=").append(source.getPath());
+			cmd.append(" -Dsources=").append(source.getName());
 		}
 		if (javadoc != null) {
-			cmd.append(" -Djavadoc=").append(javadoc.getPath());
+			cmd.append(" -Djavadoc=").append(javadoc.getName());
 		}
-		upload(pom, cmd);
+		upload(jar, cmd);
 		// logger.info("end to upload jar dir:" + pom.getAbsolutePath());
 	}
 
-	private void upload(final File pom, StringBuffer cmd) {
+	private void upload(final File jar, StringBuffer cmd) {
 		try {
-			final Process proc = MvnCmd.DOSCMD_EXCUTOR.exec(cmd.toString(), null, pom.getParentFile());
+			String cmdStr = cmd.toString();
+			logger.info("执行命令:" + cmdStr);
+			final Process proc = Runtime.getRuntime().exec(cmdStr, null, jar.getParentFile());
 			InputStream inputStream = proc.getInputStream();
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			BufferedReader reader = new BufferedReader(inputStreamReader);
 			String line;
 			StringBuffer logBuffer = new StringBuffer();
-			logBuffer.append("\n\n\n========================================================\n");
+			logBuffer.append("========================================================");
 			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("[INFO]") || line.startsWith("Upload")) {
-					logBuffer.append(Thread.currentThread().getName() + " : " + line + "\n");
-				}
+				logBuffer.append(Thread.currentThread().getName() + " : " + line + "\n");
 			}
 			logger.info(logBuffer.toString());
 			int result = proc.waitFor();
-			if (result != 0) {
-				logger.error("上传失败：" + pom.getAbsolutePath());
-			} else
-				logger.info("上传成功:" + this.jarDir.getAbsolutePath());
+			if (result != 0)
+				logger.error("上传失败：" + jar.getAbsolutePath());
+			else
+				logger.info("上传成功:" + jar.getAbsolutePath());
+			System.out.println(System.lineSeparator());
 		} catch (Exception e) {
-			logger.error("上传失败：" + pom.getAbsolutePath(), e);
+			logger.error("上传失败：" + jar.getAbsolutePath(), e);
 			e.printStackTrace();
 		}
 	}

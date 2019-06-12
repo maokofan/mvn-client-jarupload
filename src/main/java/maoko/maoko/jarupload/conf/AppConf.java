@@ -29,12 +29,6 @@ public class AppConf {
 	/**
 	 * 远程仓库登录用户密码
 	 */
-	@Value("${repository.user.id}")
-	public String user_id;
-
-	/**
-	 * 远程仓库登录用户密码
-	 */
 	@Value("${repository.user.name}")
 	public String user_name;
 
@@ -49,5 +43,11 @@ public class AppConf {
 	 */
 	@Value("${maven.repository.local}")
 	public String dir;
+	
+	/**
+	 * 扫描当前本地maven jar包目录
+	 */
+	@Value("${maven.bin.dir}")
+	public String maven_bin_dir;
 
 }

@@ -24,7 +24,8 @@ public class ScanDirExc {
 	 */
 	public static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(10);// 线程池越多 上传越快
 
-	public void start(AppConf appconf) {
+	public void start() {
+		AppConf appconf = AppUploadJar.appConf;
 		System.out.println("start scan dir:" + appconf.dir);
 		scanDir(new File(appconf.dir));
 		// System.out.println("scan dir end:" + appconf.dir);
@@ -44,6 +45,7 @@ public class ScanDirExc {
 					} else// 当前文件是文件时，则传入父目录
 					{
 						submit(new UploadJarFiles(file.getParentFile()));
+						break;// 防止同目录重复扫描
 					}
 				}
 			}

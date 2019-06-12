@@ -1,5 +1,7 @@
 package maoko.maoko.jarupload;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -8,9 +10,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import maoko.maoko.jarupload.conf.AppConf;
 import maoko.maoko.jarupload.conf.MvnCmd;
 import maoko.maoko.jarupload.conf.MvnSettings;
-import maoko.maoko.jarupload.conf.RepositoryUser;
 
 /**
+ * 需要配置maven环境变量
+ * 
  * @dscr 程序入口
  * @author fanpei
  * @time 2019年6月10日 下午3:56:19
@@ -18,9 +21,9 @@ import maoko.maoko.jarupload.conf.RepositoryUser;
  */
 @SpringBootApplication
 public class AppUploadJar implements CommandLineRunner {
-
+	public static AppConf appConf;
 	@Autowired
-	private AppConf appConf;
+	public AppConf appConf_obj;
 
 	@Autowired
 	private ScanDirExc exc;
@@ -30,10 +33,23 @@ public class AppUploadJar implements CommandLineRunner {
 	}
 
 	public void run(String... args) throws Exception {
-		RepositoryUser user = new RepositoryUser(appConf.user_id, appConf.user_name, appConf.user_password);
-		UploadJarFiles.init();
-		MvnSettings.init(user);
-		MvnCmd.init(MvnSettings.SETTINGS_PATH, appConf.repository_id, appConf.repository_durl);
-		exc.start(appConf);
+		AppUploadJar.appConf = appConf_obj;
+		try {
+			validate();
+			MvnSettings.init();
+			MvnCmd.init();
+			UploadJarFiles.init();
+			exc.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private void validate() throws Exception {
+		File mavendir = new File(AppUploadJar.appConf.dir);
+		if (!mavendir.exists()) {
+			throw new Exception(AppUploadJar.appConf.dir + " is not exists");
+		}
 	}
 }

@@ -3,14 +3,18 @@ package maoko.jarupload;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import maoko.jarupload.conf.MvnCmd;
+import maoko.jarupload.sys.os.EOsType;
+import maoko.jarupload.sys.os.OSPlatformUtil;
 
 /**
  * 上传一个jar,包含多个文件
@@ -24,12 +28,26 @@ public class UploadJarFiles implements Runnable {
 
 	private static Logger logger = null;
 	private static Pattern DATE_PATTERN = null;
+	public static File TMP_DIR;// 文件临时根目录
+	@Deprecated
 	private static File workDir = null;
 
-	public static void init() {
+	public static void init() throws Exception {
 		logger = LoggerFactory.getLogger(UploadJarFiles.class);
 		DATE_PATTERN = Pattern.compile("-[\\d]{8}\\.[\\d]{6}-");
 		workDir = new File(AppUploadJar.appConf.maven_bin_dir);
+		String tmpDir = null;
+		EOsType ostype = OSPlatformUtil.getOSType();
+		if (EOsType.Linux == ostype) {
+			tmpDir = "/tmp";
+		} else if (EOsType.Windows == ostype) {
+			tmpDir = "C:\\tmp";
+		} else {
+			throw new Exception("not supperted os system!");
+		}
+		TMP_DIR = new File(tmpDir);
+		if (!TMP_DIR.exists())
+			TMP_DIR.mkdirs();
 	}
 
 	private File jarDir;
@@ -42,31 +60,33 @@ public class UploadJarFiles implements Runnable {
 	}
 
 	public void run() {
-		// 判断路径过长移动到临时文件夹
-		copyToTmpDir();
-
-		File pom = null;
-		File jar = null;
-		File source = null;
-		File javadoc = null;
-		File[] files = jarDir.listFiles();
-		// 忽略日期快照版本，如 xxx-mySql-2.2.6-20170714.095105-1.jar
-		for (File file : files) {
-			String name = file.getName();
-			if (DATE_PATTERN.matcher(name).find()) {
-				// skip
-			} else if (name.endsWith(".pom")) {
-				pom = file;
-			} else if (name.endsWith("-javadoc.jar")) {
-				javadoc = file;
-			} else if (name.endsWith("-sources.jar")) {
-				source = file;
-			} else if (name.endsWith(".jar")) {
-				jar = file;
+		try {
+			// 判断路径过长移动到临时文件夹
+			File pom = null;
+			File jar = null;
+			File source = null;
+			File javadoc = null;
+			File[] files = jarDir.listFiles();
+			// 忽略日期快照版本，如 xxx-mySql-2.2.6-20170714.095105-1.jar
+			for (File file : files) {
+				String name = file.getName();
+				if (DATE_PATTERN.matcher(name).find()) {
+					// skip
+				} else if (name.endsWith(".pom")) {
+					pom = file;
+				} else if (name.endsWith("-javadoc.jar")) {
+					javadoc = file;
+				} else if (name.endsWith("-sources.jar")) {
+					source = file;
+				} else if (name.endsWith(".jar")) {
+					jar = file;
+				}
 			}
-		}
-		if (pom != null && jar != null) {
-			deploy(pom, jar, source, javadoc);
+			if (pom != null && jar != null) {
+				deploy(pom, jar, source, javadoc);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -96,8 +116,9 @@ public class UploadJarFiles implements Runnable {
 	 * 上传包
 	 * 
 	 * @param pom
+	 * @throws IOException
 	 */
-	public void deploy(final File pom, final File jar, final File source, final File javadoc) {
+	public void deploy(final File pom, final File jar, final File source, final File javadoc) throws IOException {
 		// logger.info("ready to upload jar dir:" + pom.getAbsolutePath());
 		StringBuffer cmd = new StringBuffer(MvnCmd.BASE_CMD_STR);
 		cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
@@ -109,15 +130,32 @@ public class UploadJarFiles implements Runnable {
 		if (javadoc != null) {
 			cmd.append(" -Djavadoc=").append(javadoc.getName());
 		}
-		upload(jar, cmd);
-		// logger.info("end to upload jar dir:" + pom.getAbsolutePath());
+		int result = upload(jar, jar.getParentFile(), cmd);
+		if (result != 0) {// 重试
+			logger.info("移动目录后重试上传:" + jar.getAbsolutePath());
+			logger.info("starting copy files to tmp dir");
+			String newdir = TMP_DIR.getAbsolutePath() + File.separator + jar.getName().replaceAll(".jar", "");
+			File destTmp = new File(newdir);
+			// 复制至临时目录
+			FileUtils.copyDirectory(jar.getParentFile(), destTmp);
+			logger.info("sucessful copy files to tmp dir");
+			upload(jar, destTmp, cmd);
+			// 上传完后删除
+			FileUtils.deleteDirectory(destTmp);
+		}
 	}
 
-	private void upload(final File jar, StringBuffer cmd) {
+	/**
+	 * @param jar
+	 * @param cmd
+	 * @return 0:成功
+	 */
+	private int upload(final File jar, final File workDir, StringBuffer cmd) {
+		int result = 1;
 		try {
 			String cmdStr = cmd.toString();
 			logger.info("执行命令:" + cmdStr);
-			final Process proc = Runtime.getRuntime().exec(cmdStr, null, jar.getParentFile());
+			final Process proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
 			InputStream inputStream = proc.getInputStream();
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			BufferedReader reader = new BufferedReader(inputStreamReader);
@@ -128,19 +166,16 @@ public class UploadJarFiles implements Runnable {
 				logBuffer.append(Thread.currentThread().getName() + " : " + line + "\n");
 			}
 			logger.info(logBuffer.toString());
-			int result = proc.waitFor();
-			if (result != 0)
+			result = proc.waitFor();
+			if (result != 0) {
 				logger.error("上传失败：" + jar.getAbsolutePath());
-			else
+			} else
 				logger.info("上传成功:" + jar.getAbsolutePath());
 			System.out.println(System.lineSeparator());
 		} catch (Exception e) {
 			logger.error("上传失败：" + jar.getAbsolutePath(), e);
 			e.printStackTrace();
 		}
-	}
-
-	private void copyToTmpDir() {
-
+		return result;
 	}
 }

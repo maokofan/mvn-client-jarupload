@@ -6,6 +6,7 @@ package maoko.jarupload.conf;
  * @time 2019年6月10日 下午4:37:04
  *
  */
+@Deprecated
 public class RepositoryUser {
 
 	private String id;

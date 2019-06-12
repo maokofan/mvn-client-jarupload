@@ -22,7 +22,6 @@ import maoko.jarupload.conf.MvnSettings;
 @SpringBootApplication
 public class AppUploadJar implements CommandLineRunner {
 	public static AppConf appConf;
-	public static String TMP_DIR;// 文件临时根目录
 
 	@Autowired
 	public AppConf appConf_obj;

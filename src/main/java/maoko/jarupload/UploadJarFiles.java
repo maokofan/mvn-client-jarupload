@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
@@ -152,23 +151,16 @@ public class UploadJarFiles implements Runnable {
 	 */
 	private int upload(final File jar, final File workDir, StringBuffer cmd) {
 		int result = 1;
+		Process proc = null;
 		try {
 			String cmdStr = cmd.toString();
 			logger.info("\r\n========================================================\r\n执行命令:" //
 					+ cmdStr //
 					+ "\r\n========================================================");
-			final Process proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
-			InputStream inputStream = proc.getInputStream();
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-			BufferedReader reader = new BufferedReader(inputStreamReader);
-			String line;
-			StringBuffer logBuffer = new StringBuffer();
-
-			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("["))
-					logBuffer.append(Thread.currentThread().getName()).append(" : ").append(line).append("\r\n");
-			}
-			logger.info(logBuffer.toString());
+			proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
+			// 线程读取输出流
+			TheadPoolExc.submitPrint(new StandardStreamPrint(proc.getInputStream()));
+			TheadPoolExc.submitPrint(new StandardStreamPrint(proc.getErrorStream()));
 			result = proc.waitFor();
 			if (result != 0) {
 				logger.error("上传失败：" + jar.getAbsolutePath());
@@ -178,6 +170,9 @@ public class UploadJarFiles implements Runnable {
 		} catch (Exception e) {
 			logger.error("上传失败：" + jar.getAbsolutePath(), e);
 			e.printStackTrace();
+		} finally {
+			if (proc != null)
+				proc.destroy();// 销毁线程
 		}
 		return result;
 	}

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import maoko.jarupload.conf.AppConf;
 
 /**
- * 扫描目录执行器
+ * 线程池执行器
  * 
  * @dscr
  * @author fanpei
@@ -17,21 +17,25 @@ import maoko.jarupload.conf.AppConf;
  *
  */
 @Component
-public class ScanDirExc {
+public class TheadPoolExc {
 
 	/**
 	 * 上传执行线程服务
 	 */
-	public static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(10);// 线程池越多 上传越快
+	public static ExecutorService UPLOAD_SERVICE = null;// 上传线程
 
-	public void start() {
+	public static ExecutorService PRINT_SERVICE = null; // 打印线程
+
+	public static void start() {
 		AppConf appconf = AppUploadJar.appConf;
+		UPLOAD_SERVICE = Executors.newFixedThreadPool(appconf.uploadTdCount);
+		PRINT_SERVICE = Executors.newCachedThreadPool();
 		System.out.println("start scan dir:" + appconf.dir);
 		scanDir(new File(appconf.dir));
 		// System.out.println("scan dir end:" + appconf.dir);
 	}
 
-	private void scanDir(File JAR_DIR) {
+	private static void scanDir(File JAR_DIR) {
 		if (JAR_DIR.isDirectory()) {
 			File[] files = JAR_DIR.listFiles();
 			if (files == null || files.length == 0) {
@@ -44,7 +48,7 @@ public class ScanDirExc {
 						scanDir(file);
 					} else// 当前文件是文件时，则传入父目录
 					{
-						submit(new UploadJarFiles(file.getParentFile()));
+						submitUpload(new UploadJarFiles(file.getParentFile()));
 						break;// 防止同目录重复扫描
 					}
 				}
@@ -53,11 +57,20 @@ public class ScanDirExc {
 	}
 
 	/**
-	 * 提交一个任务
+	 * 提交一个上传任务
 	 * 
 	 * @param task
 	 */
-	public static void submit(Runnable task) {
-		EXECUTOR_SERVICE.submit(task);
+	public static void submitUpload(Runnable task) {
+		UPLOAD_SERVICE.submit(task);
+	}
+
+	/**
+	 * 提交一个打印任务
+	 * 
+	 * @param task
+	 */
+	public static void submitPrint(Runnable task) {
+		PRINT_SERVICE.submit(task);
 	}
 }

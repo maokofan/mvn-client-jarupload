@@ -27,7 +27,7 @@ public class AppUploadJar implements CommandLineRunner {
 	public AppConf appConf_obj;
 
 	@Autowired
-	private ScanDirExc exc;
+	private TheadPoolExc exc;
 
 	public static void main(String[] args) {
 		SpringApplication.run(AppUploadJar.class, args);

@@ -154,16 +154,19 @@ public class UploadJarFiles implements Runnable {
 		int result = 1;
 		try {
 			String cmdStr = cmd.toString();
-			logger.info("执行命令:" + cmdStr);
+			logger.info("\r\n========================================================\r\n执行命令:" //
+					+ cmdStr //
+					+ "\r\n========================================================");
 			final Process proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
 			InputStream inputStream = proc.getInputStream();
 			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 			BufferedReader reader = new BufferedReader(inputStreamReader);
 			String line;
 			StringBuffer logBuffer = new StringBuffer();
-			logBuffer.append("========================================================");
+
 			while ((line = reader.readLine()) != null) {
-				logBuffer.append(Thread.currentThread().getName() + " : " + line + "\n");
+				if (line.startsWith("["))
+					logBuffer.append(Thread.currentThread().getName()).append(" : ").append(line).append("\r\n");
 			}
 			logger.info(logBuffer.toString());
 			result = proc.waitFor();

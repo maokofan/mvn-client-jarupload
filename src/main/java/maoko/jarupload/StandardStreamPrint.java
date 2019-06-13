@@ -28,7 +28,7 @@ public class StandardStreamPrint implements Runnable {
 		try {
 			List<String> lines = IOUtils.readLines(in, Charset.forName("utf-8"));
 			if (lines != null) {
-				StringBuilder builder = new StringBuilder();
+				StringBuilder builder = new StringBuilder(System.lineSeparator());
 				for (String line : lines) {
 					if (line.startsWith("["))
 						builder.append(line).append(System.lineSeparator());

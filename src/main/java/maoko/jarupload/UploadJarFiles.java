@@ -116,17 +116,8 @@ public class UploadJarFiles implements Runnable {
 	 */
 	public void deploy(final File pom, final File jar, final File source, final File javadoc) throws IOException {
 		// logger.info("ready to upload jar dir:" + pom.getAbsolutePath());
-		StringBuffer cmd = new StringBuffer(MvnCmd.BASE_CMD_STR);
-		cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
-		cmd.append(" -DpomFile=").append(pom.getName());
-		cmd.append(" -Dpackaging=jar");
-		if (source != null) {
-			cmd.append(" -Dsources=").append(source.getName());
-		}
-		if (javadoc != null) {
-			cmd.append(" -Djavadoc=").append(javadoc.getName());
-		}
-		int result = upload(jar, jar.getParentFile(), cmd);
+		String cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc);
+		int result = upload(jar, jar.getParentFile(), cmdStr);
 		if (result != 0) {// 重试
 			logger.info("移动目录后重试上传:" + jar.getAbsolutePath());
 			logger.info("starting copy files to tmp dir");
@@ -135,7 +126,7 @@ public class UploadJarFiles implements Runnable {
 			// 复制至临时目录
 			FileUtils.copyDirectory(jar.getParentFile(), destTmp);
 			logger.info("sucessful copy files to tmp dir");
-			upload(jar, destTmp, cmd);
+			upload(jar, destTmp, cmdStr);
 			// 上传完后删除
 			FileUtils.deleteDirectory(destTmp);
 		}
@@ -146,18 +137,17 @@ public class UploadJarFiles implements Runnable {
 	 * @param cmd
 	 * @return 0:成功
 	 */
-	private int upload(final File jar, final File workDir, StringBuffer cmd) {
+	private int upload(final File jar, final File workDir, String cmdStr) {
 		int result = 1;
 		Process proc = null;
 		try {
-			String cmdStr = cmd.toString();
 			logger.info("\r\n========================================================\r\n执行命令:" //
 					+ cmdStr //
 					+ "\r\n========================================================");
 			proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
 			// 线程读取输出流
-			TheadPoolExc.submitPrint(new StandardStreamPrint(proc.getInputStream()));
-			TheadPoolExc.submitPrint(new StandardStreamPrint(proc.getErrorStream()));
+			TheadPoolExc.excutePrint(new StandardStreamPrint(proc.getInputStream()));
+			TheadPoolExc.excutePrint(new StandardStreamPrint(proc.getErrorStream()));
 			result = proc.waitFor();
 			if (result != 0) {
 				logger.error("上传失败：" + jar.getAbsolutePath());

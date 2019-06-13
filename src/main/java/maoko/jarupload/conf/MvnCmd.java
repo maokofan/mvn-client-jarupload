@@ -1,5 +1,7 @@
 package maoko.jarupload.conf;
 
+import java.io.File;
+
 import maoko.jarupload.AppUploadJar;
 
 /**
@@ -26,4 +28,19 @@ public class MvnCmd {
 				.replace("{2}", AppUploadJar.appConf.repository_id);
 		DOSCMD_EXCUTOR = Runtime.getRuntime();
 	}
+
+	public static String getFullCmdStr(final File pom, final File jar, final File source, final File javadoc) {
+		StringBuilder cmd = new StringBuilder(MvnCmd.BASE_CMD_STR);
+		cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
+		cmd.append(" -DpomFile=").append(pom.getName());
+		cmd.append(" -Dpackaging=jar");
+		if (source != null) {
+			cmd.append(" -Dsources=").append(source.getName());
+		}
+		if (javadoc != null) {
+			cmd.append(" -Djavadoc=").append(javadoc.getName());
+		}
+		return cmd.toString();
+	}
+
 }

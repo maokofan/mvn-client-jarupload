@@ -28,13 +28,10 @@ public class UploadJarFiles implements Runnable {
 	private static Logger logger = null;
 	private static Pattern DATE_PATTERN = null;
 	public static File TMP_DIR;// 文件临时根目录
-	@Deprecated
-	private static File workDir = null;
 
 	public static void init() throws Exception {
 		logger = LoggerFactory.getLogger(UploadJarFiles.class);
 		DATE_PATTERN = Pattern.compile("-[\\d]{8}\\.[\\d]{6}-");
-		workDir = new File(AppUploadJar.appConf.maven_bin_dir);
 		String tmpDir = null;
 		EOsType ostype = OSPlatformUtil.getOSType();
 		if (EOsType.Linux == ostype) {

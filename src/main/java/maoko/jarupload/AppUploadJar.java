@@ -26,9 +26,6 @@ public class AppUploadJar implements CommandLineRunner {
 	@Autowired
 	public AppConf appConf_obj;
 
-	@Autowired
-	private TheadPoolExc exc;
-
 	public static void main(String[] args) {
 		SpringApplication.run(AppUploadJar.class, args);
 	}
@@ -40,7 +37,7 @@ public class AppUploadJar implements CommandLineRunner {
 			MvnSettings.init();
 			MvnCmd.init();
 			UploadJarFiles.init();
-			exc.start();
+			TheadPoolExc.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

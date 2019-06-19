@@ -44,11 +44,6 @@ public class AppConf {
 	@Value("${maven.repository.local}")
 	public String dir;
 
-	/**
-	 * 扫描当前本地maven jar包目录
-	 */
-	@Value("${maven.bin.dir}")
-	public String maven_bin_dir;
 
 	@Value("${app.upload.thread.count}")
 	public int uploadTdCount;

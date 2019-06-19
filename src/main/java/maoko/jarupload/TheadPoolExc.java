@@ -34,8 +34,8 @@ public class TheadPoolExc {
 
 	public static void stop() throws InterruptedException {
 		while (true) {
-			Thread.sleep(10000);// 10秒
-			if (UPLOAD_SERVICE.getQueue().isEmpty() && UPLOAD_SERVICE.getQueue().isEmpty()) {
+			Thread.sleep(60000);// 60秒
+			if (UPLOAD_SERVICE.getQueue().isEmpty() && PRINT_SERVICE.getQueue().isEmpty()) {
 				UPLOAD_SERVICE.shutdown();
 				PRINT_SERVICE.shutdown();
 				System.out.println("所有的线程结束！");
@@ -58,8 +58,10 @@ public class TheadPoolExc {
 						scanDir(file);
 					} else// 当前文件是文件时，则传入父目录
 					{
-						excuteUpload(new UploadJarFiles(file.getParentFile()));
-						break;// 防止同目录重复扫描
+						if (file.getName().endsWith(".jar")) {// 以jar结束
+							excuteUpload(new UploadJarFiles(file.getParentFile()));
+							break;// 防止同目录重复扫描
+						}
 					}
 				}
 			}

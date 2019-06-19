@@ -22,8 +22,8 @@ public class MvnSettings {
 			+ "    xsi:schemaLocation=\"http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd\">"
 			+ "{0}" + "</settings>";
 
-	private static String servers = "\r\n<servers>"//
-			+ "\r\n<server>\r\n" //
+	private static String servers = "\r\n<servers>\r\n"//
+			+ "   <server>\r\n" //
 			+ "      <id>{0}</id>\r\n"//
 			+ "      <username>{1}</username>\r\n" //
 			+ "      <password>{2}</password>\r\n"//

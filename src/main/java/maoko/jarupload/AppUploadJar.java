@@ -32,22 +32,24 @@ public class AppUploadJar implements CommandLineRunner {
 
 	public void run(String... args) throws Exception {
 		AppUploadJar.appConf = appConf_obj;
-		try {
-			validate();
-			MvnSettings.init();
-			MvnCmd.init();
-			UploadJarFiles.init();
-			TheadPoolExc.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		new Thread(new Runnable() {// 异步执行
 
-	}
+			@Override
+			public void run() {
+				try {
+					File mavendir = new File(AppUploadJar.appConf.dir);
+					if (!mavendir.exists()) {
+						throw new Exception(AppUploadJar.appConf.dir + " is not exists");
+					}
+					MvnSettings.init();
+					MvnCmd.init();
+					UploadJarFiles.init();
+					TheadPoolExc.start();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 
-	private void validate() throws Exception {
-		File mavendir = new File(AppUploadJar.appConf.dir);
-		if (!mavendir.exists()) {
-			throw new Exception(AppUploadJar.appConf.dir + " is not exists");
-		}
 	}
 }

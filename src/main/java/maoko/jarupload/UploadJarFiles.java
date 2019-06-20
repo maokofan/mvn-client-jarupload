@@ -75,7 +75,8 @@ public class UploadJarFiles implements Runnable {
 					jar = file;
 				}
 			}
-			deploy(pom, jar, source, javadoc);
+			if (pom != null || jar != null)// 限制条件，防止93行file为空
+				deploy(pom, jar, source, javadoc);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

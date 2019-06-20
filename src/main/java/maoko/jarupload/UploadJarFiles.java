@@ -1,10 +1,7 @@
 package maoko.jarupload;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -84,28 +81,6 @@ public class UploadJarFiles implements Runnable {
 		}
 	}
 
-	public static boolean packingIsPom(File pom) {
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(pom)));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.trim().indexOf("<packaging>pom</packaging>") != -1) {
-					return true;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if (reader != null)
-					reader.close();
-			} catch (Exception e) {
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * 上传包
 	 * 
@@ -113,7 +88,6 @@ public class UploadJarFiles implements Runnable {
 	 * @throws IOException
 	 */
 	public void deploy(final File pom, final File jar, final File source, final File javadoc) throws IOException {
-		// logger.info("ready to upload jar dir:" + pom.getAbsolutePath());
 		String cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc);
 		File file = jar == null ? pom : jar;
 		int result = upload(file.getAbsolutePath(), file.getParentFile(), cmdStr);

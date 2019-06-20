@@ -58,7 +58,7 @@ public class TheadPoolExc {
 						scanDir(file);
 					} else// 当前文件是文件时，则传入父目录
 					{
-						if (file.getName().endsWith(".jar")) {// 以jar结束
+						if (file.getName().endsWith(".pom") || file.getName().endsWith(".jar")) {// 以pom结束
 							excuteUpload(new UploadJarFiles(file.getParentFile()));
 							break;// 防止同目录重复扫描
 						}

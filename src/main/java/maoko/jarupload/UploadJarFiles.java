@@ -78,9 +78,7 @@ public class UploadJarFiles implements Runnable {
 					jar = file;
 				}
 			}
-			if (pom != null && jar != null) {
-				deploy(pom, jar, source, javadoc);
-			}
+			deploy(pom, jar, source, javadoc);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -117,17 +115,18 @@ public class UploadJarFiles implements Runnable {
 	public void deploy(final File pom, final File jar, final File source, final File javadoc) throws IOException {
 		// logger.info("ready to upload jar dir:" + pom.getAbsolutePath());
 		String cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc);
-		int result = upload(jar.getAbsolutePath(), jar.getParentFile(), cmdStr);
+		File file = jar == null ? pom : jar;
+		int result = upload(file.getAbsolutePath(), file.getParentFile(), cmdStr);
 		if (result != 0) {// 重试
-			logger.info("移动目录后重试上传:" + jar.getAbsolutePath());
+			logger.info("移动目录后重试上传:" + file.getAbsolutePath());
 			logger.info("starting copy files to tmp dir");
 			StringBuilder newdirsb = new StringBuilder(TMP_DIR.getAbsolutePath()).append(File.separator);
-			String newJarPath = newdirsb.append(jar.getName()).toString();
+			String newJarPath = newdirsb.append(file.getName()).toString();
 			String newdir = newJarPath.replace(".jar", "");
 			File destTmp = new File(newdir);
 			try {
 				// 复制至临时目录
-				FileUtils.copyDirectory(jar.getParentFile(), destTmp);
+				FileUtils.copyDirectory(file.getParentFile(), destTmp);
 				logger.info("sucessful copy files to tmp dir");
 				upload(newJarPath, destTmp, cmdStr);
 			} finally {
@@ -142,7 +141,7 @@ public class UploadJarFiles implements Runnable {
 	 * @param cmd
 	 * @return 0:成功
 	 */
-	private int upload(final String jarPath, final File workDir, String cmdStr) {
+	private int upload(final String filePath, final File workDir, String cmdStr) {
 		int result = 1;
 		Process proc = null;
 		try {
@@ -155,12 +154,12 @@ public class UploadJarFiles implements Runnable {
 			TheadPoolExc.excutePrint(new StandardStreamPrint(proc.getErrorStream()));
 			result = proc.waitFor();
 			if (result != 0) {
-				logger.error("上传失败:{}", jarPath);
+				logger.error("上传失败:{}", filePath);
 			} else
-				logger.info("上传成功:{}", jarPath);
+				logger.info("上传成功:{}", filePath);
 			System.out.println(System.lineSeparator());
 		} catch (Exception e) {
-			logger.error("上传失败：{}", jarPath, e);
+			logger.error("上传失败：{}", filePath, e);
 			e.printStackTrace();
 		} finally {
 			if (proc != null)

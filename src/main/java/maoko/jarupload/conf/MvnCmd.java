@@ -14,6 +14,7 @@ import maoko.jarupload.AppUploadJar;
  */
 public class MvnCmd {
 	private static final String DOS_CMD = "cmd /c mvn" //
+			+ "  -X"//
 			+ " -s {0}" //
 			+ " deploy:deploy-file"//
 			+ " -Durl={1}"//

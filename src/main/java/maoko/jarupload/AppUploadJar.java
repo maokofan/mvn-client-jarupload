@@ -33,8 +33,6 @@ public class AppUploadJar implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		AppUploadJar.appConf = appConf_obj;
 		new Thread(new Runnable() {// 异步执行
-
-			@Override
 			public void run() {
 				try {
 					File mavendir = new File(AppUploadJar.appConf.dir);

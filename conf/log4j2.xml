@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration status="DEBUG" monitorInterval="60">
+	<properties>
+		<property name="APP_NAME">mvn_jarClient</property>
+	</properties>
+	<loggers>
+		<root level="DEBUG">
+			<appender-ref ref="Error" />
+			<appender-ref ref="Debug" />
+			<appender-ref ref="Console" />
+		</root>
+	</loggers>
+	<appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<ThresholdFilter level="trace" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout
+				pattern="%d{yyyy/MM/dd HH:mm:ss} %level Loc:%c Lines:%L Msg:%msg%xEx%n" />
+		</Console>
+		<RollingFile name="Debug"
+			fileName="${sys:user.dir}/logs/${APP_NAME}.log"
+			filePattern="${sys:user.dir}/logs/${APP_NAME}_debug-%d{yyyy-MM-dd}_%i.log">
+			<ThresholdFilter level="DEBUG" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout
+				pattern="%d{yyyy/MM/dd HH:mm:ss} %level Loc:%c Lines:%L  Msg:%msg%xEx%n" />
+			<SizeBasedTriggeringPolicy size="3 MB" />
+			<!-- 最多20个日志 -->
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+		<RollingFile name="Error"
+			fileName="${sys:user.dir}/logs/${APP_NAME}_error.log"
+			filePattern="${sys:user.dir}/logs/${APP_NAME}_error-%d{yyyy-MM-dd}_%i.log">
+			<ThresholdFilter level="Error" onMatch="ACCEPT"
+				onMismatch="DENY" />
+			<PatternLayout
+				pattern="%d{yyyy/MM/dd HH:mm:ss} %level Loc:%c Lines:%L  Msg:%msg%xEx%n" />
+			<SizeBasedTriggeringPolicy size="10 MB" />
+			<!-- 最多20个日志 -->
+			<DefaultRolloverStrategy max="20" />
+		</RollingFile>
+	</appenders>
+</configuration>

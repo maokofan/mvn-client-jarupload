@@ -7,7 +7,6 @@ import java.io.IOException;
 import maoko.jarupload.AppUploadJar;
 import maoko.jarupload.AsyncStreamPrint;
 import maoko.jarupload.TheadPoolExc;
-import maoko.jarupload.utils.FileUtil;
 
 /**
  * @dscr mvn 命令
@@ -16,13 +15,11 @@ import maoko.jarupload.utils.FileUtil;
  *
  */
 public class MvnCmd {
-	private static final String DOS_CMD = "cmd /c \"cd /d {0}/mvn/bin && mvn" //
+	private static final String DOS_CMD = "cmd /c mvn" //
 			+ " -s {1}" //
 			+ "  deploy:deploy-file"//
 			+ " -Durl={2}"//
-			+ " -DrepositoryId={3}\"";
-
-	private static String MVN_BIN_CMD = "wmic ENVIRONMENT where \"name='PATH' and username='<system>'\" set VariableValue=\"{0};%PATH%\"";
+			+ " -DrepositoryId={3}";
 
 	private static String BASE_CMD_STR;// mvn 命令
 	private static String BASE_CMD_STR_FULL;// 带有完整错误信息的mvn 命令
@@ -32,29 +29,11 @@ public class MvnCmd {
 	public static void init() throws IOException, InterruptedException {
 		DOSCMD_EXCUTOR = Runtime.getRuntime();
 		String settingsXml = MvnSettings.SETTINGS_PATH;
-		String runPath = System.getProperty("user.dir");
-		BASE_CMD_STR = DOS_CMD.replace("{0}", runPath)//
-				.replace("{1}", settingsXml)//
+		BASE_CMD_STR = DOS_CMD.replace("{1}", settingsXml)//
 				.replace("{2}", AppUploadJar.appConf.repository_durl)//
 				.replace("{3}", AppUploadJar.appConf.repository_id);
-		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("mvn/bin mvn", "mvn/bin mvn -e -X");
+		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("/c mvn", "/c mvn -e -X");
 		// setLocalMvn(runPath);
-	}
-
-	@Deprecated
-	private static void setLocalMvn(String runPath) throws InterruptedException {
-		// set maven bin
-		File mavenBin = new File(runPath, "mvn/bin");
-		String mvnBinPath = mavenBin.getAbsolutePath();
-		String PATH = System.getenv().get("PATH");
-		if (PATH != null && !PATH.contains(mvnBinPath)) {
-			File nirCmdFile = new File(runPath, "nircmd");
-			MVN_BIN_CMD = MVN_BIN_CMD.replace("{0}", mvnBinPath);
-			// 更新命令文件
-			FileUtil.writeStr2File(MVN_BIN_CMD, new File(runPath, "nircmd/setmvnpath.bat").getAbsolutePath());
-			excuteCmd("nircmd.exe setmvnpath.bat", nirCmdFile);
-			excuteCmd("cmd /c echo %PATH%");
-		}
 	}
 
 	public static void excuteCmd(String cmd) throws InterruptedException {

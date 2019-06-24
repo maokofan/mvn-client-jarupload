@@ -39,6 +39,7 @@ public class AppUploadJar implements CommandLineRunner {
 					if (!mavendir.exists()) {
 						throw new Exception(AppUploadJar.appConf.dir + " is not exists");
 					}
+					TheadPoolExc.init();
 					MvnSettings.init();
 					MvnCmd.init();
 					UploadJarFiles.init();

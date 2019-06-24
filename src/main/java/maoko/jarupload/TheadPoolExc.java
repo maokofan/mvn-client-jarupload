@@ -23,10 +23,14 @@ public class TheadPoolExc {
 
 	public static ThreadPoolExecutor PRINT_SERVICE = null; // 打印线程
 
-	public static void start() throws InterruptedException {
+	public static void init() {
 		AppConf appconf = AppUploadJar.appConf;
 		UPLOAD_SERVICE = (ThreadPoolExecutor) Executors.newFixedThreadPool(appconf.uploadTdCount);
 		PRINT_SERVICE = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+	}
+
+	public static void start() throws InterruptedException {
+		AppConf appconf = AppUploadJar.appConf;
 		System.out.println("start scan dir:" + appconf.dir);
 		scanDir(new File(appconf.dir));
 		stop();

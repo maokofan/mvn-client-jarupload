@@ -1,9 +1,9 @@
 package maoko.jarupload.conf;
 
 import java.io.File;
-import java.io.PrintWriter;
 
 import maoko.jarupload.AppUploadJar;
+import maoko.jarupload.utils.FileUtil;
 
 /**
  * 生成本地的mvn settings
@@ -39,36 +39,14 @@ public class MvnSettings {
 	public static void genLocalSeetingsXml() {
 		AppConf conf = AppUploadJar.appConf;
 		String runPath = System.getProperty("user.dir");
-		SETTINGS_PATH = runPath + settingsFile;
+		SETTINGS_PATH = new File(runPath, settingsFile).getAbsolutePath();
 
-		PrintWriter pw = null;
-		try {
-			// 组装settings字符串
-			String serverWithUser = servers.replace("{0}", conf.repository_id)//
-					.replace("{1}", conf.user_name)//
-					.replace("{2}", conf.user_password);
-			String settingsWithUser = settings.replace("{0}", serverWithUser);
-
-			// 递归创建文件
-			File xmlf = new File(SETTINGS_PATH);
-			if (!xmlf.exists()) {
-				if (!xmlf.getParentFile().exists())
-					xmlf.getParentFile().mkdirs();
-				xmlf.createNewFile();
-			}
-
-			// 写文件
-			pw = new PrintWriter(SETTINGS_PATH);
-			pw.print(settingsWithUser);
-			pw.flush();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (pw != null)
-				pw.close();
-		}
-
+		// 组装settings字符串
+		String serverWithUser = servers.replace("{0}", conf.repository_id)//
+				.replace("{1}", conf.user_name)//
+				.replace("{2}", conf.user_password);
+		String settingsWithUser = settings.replace("{0}", serverWithUser);
+		FileUtil.writeStr2File(settingsWithUser, SETTINGS_PATH);
 	}
 
 }

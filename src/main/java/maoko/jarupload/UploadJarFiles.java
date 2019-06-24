@@ -85,7 +85,7 @@ public class UploadJarFiles implements Runnable {
 	 * @throws IOException
 	 */
 	public void deploy(final File pom, final File jar, final File source, final File javadoc) throws IOException {
-		String cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc);
+		String cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc, false);
 		File file = jar == null ? pom : jar;
 		int result = upload(file.getAbsolutePath(), file.getParentFile(), cmdStr, false);
 		if (result != 0) {// 重试
@@ -95,13 +95,14 @@ public class UploadJarFiles implements Runnable {
 			File destTmp = new File(newdir);
 			try {
 				logger.info(
-						"\r\n\r\n========================================================\r\n移动目录重试上传 starting copy files [{}] to tmp dir [{}]",
+						"\r\n\r\n========================================================\r\n移动目录重传:开始准备移动目录 [{}] 到临时目录 [{}]",
 						file.getParentFile(), destTmp);
 				// 复制至临时目录
 				FileUtils.copyDirectory(file.getParentFile(), destTmp);
 				logger.info(
-						"\r\n\r\n========================================================\r\n移动目录重试上传 sucessful copy files [{}] to tmp dir [{}]",
+						"\r\n\r\n========================================================\r\n移动目录重传:成功移动目录 [{}] 到临时目录 [{}]",
 						file.getParentFile(), destTmp);
+				cmdStr = MvnCmd.getFullCmdStr(pom, jar, source, javadoc, true);
 				upload(newJarPath, destTmp, cmdStr, true);
 			} finally {
 				// 上传完后删除
@@ -124,8 +125,8 @@ public class UploadJarFiles implements Runnable {
 					filePath, cmdStr);
 			proc = Runtime.getRuntime().exec(cmdStr, null, workDir);
 			// 线程读取输出流
-			TheadPoolExc.excutePrint(new StandardStreamPrint(proc.getInputStream()));
-			TheadPoolExc.excutePrint(new StandardStreamPrint(proc.getErrorStream()));
+			TheadPoolExc.excutePrint(new AsyncStreamPrint(proc.getInputStream(), "["));
+			TheadPoolExc.excutePrint(new AsyncStreamPrint(proc.getErrorStream(), "["));
 			result = proc.waitFor();
 			if (result != 0) {
 				logger.error("\r\n\r\n========================================================\r\n上传失败:{}", filePath);

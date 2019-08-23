@@ -7,6 +7,8 @@ import java.io.IOException;
 import maoko.jarupload.AppUploadJar;
 import maoko.jarupload.AsyncStreamPrint;
 import maoko.jarupload.TheadPoolExc;
+import maoko.jarupload.sys.os.EOsType;
+import maoko.jarupload.sys.os.OSPlatformUtil;
 
 /**
  * @dscr mvn 命令
@@ -15,7 +17,7 @@ import maoko.jarupload.TheadPoolExc;
  *
  */
 public class MvnCmd {
-	private static final String DOS_CMD = "cmd /c mvn" //
+	private static String DOS_CMD = "mvn" //
 			+ " -s {1}" //
 			+ "  deploy:deploy-file"//
 			+ " -Durl={2}"//
@@ -29,6 +31,12 @@ public class MvnCmd {
 	public static void init() throws IOException, InterruptedException {
 		DOSCMD_EXCUTOR = Runtime.getRuntime();
 		String settingsXml = MvnSettings.SETTINGS_PATH;
+		EOsType ostype = OSPlatformUtil.getOSType();
+		if (EOsType.Linux == ostype || EOsType.Mac_OS_X == ostype) {
+			//skip
+		} else if (EOsType.Windows == ostype) {
+			DOS_CMD = "cmd /c " + DOS_CMD;
+		}
 		BASE_CMD_STR = DOS_CMD.replace("{1}", settingsXml)//
 				.replace("{2}", AppUploadJar.appConf.repository_durl)//
 				.replace("{3}", AppUploadJar.appConf.repository_id);

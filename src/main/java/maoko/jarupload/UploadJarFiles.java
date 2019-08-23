@@ -30,7 +30,7 @@ public class UploadJarFiles implements Runnable {
 		// DATE_PATTERN = Pattern.compile("-[\\d]{8}\\.[\\d]{6}-");
 		String tmpDir = null;
 		EOsType ostype = OSPlatformUtil.getOSType();
-		if (EOsType.Linux == ostype) {
+		if (EOsType.Linux == ostype || EOsType.Mac_OS_X == ostype) {
 			tmpDir = "/tmp";
 		} else if (EOsType.Windows == ostype) {
 			tmpDir = "C:\\tmp";

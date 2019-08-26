@@ -48,33 +48,43 @@ public class MvnInfo {
 		int infoCount = 0;
 		List<String> lines = IOUtils.readLines(new FileInputStream(pom), Charset.forName("utf-8"));
 		if (lines != null) {
+			//过滤<parent></parent>
+			boolean parentFlag = false;
 			for (String line : lines) {
 				line = line.trim();
-				int startIndex = -1;
-				int endIndex = -1;
-				if ((startIndex = line.indexOf("<groupId>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</groupId>");
-					groupId = line.substring(startIndex + GROUPIDCOUNT, endIndex);
-					continue;
-				} else if ((startIndex = line.indexOf("<artifactId>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</artifactId>");
-					artifactId = line.substring(startIndex + ARTIFACTIDCOUNT, endIndex);
-					continue;
-				} else if ((startIndex = line.indexOf("<version>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</version>");
-					version = line.substring(startIndex + VERSIONCOUNT, endIndex);
-					continue;
+				if(line.indexOf("<parent>") != -1){
+					parentFlag = true;
 				}
-				if (infoCount == 3) {
-					StringBuilder infoSb = new StringBuilder();
-					infoSb.append(" -DgroupId=").append(groupId);
-					infoSb.append(" -DartifactId=").append(artifactId);
-					infoSb.append(" -Dversion=").append(version);
-					mvnInfo = infoSb.toString();
-					break;
+				if(!parentFlag){
+					int startIndex = -1;
+					int endIndex = -1;
+					if ((startIndex = line.indexOf("<groupId>")) != -1) {
+						infoCount++;
+						endIndex = line.indexOf("</groupId>");
+						groupId = line.substring(startIndex + GROUPIDCOUNT, endIndex);
+						continue;
+					} else if ((startIndex = line.indexOf("<artifactId>")) != -1) {
+						infoCount++;
+						endIndex = line.indexOf("</artifactId>");
+						artifactId = line.substring(startIndex + ARTIFACTIDCOUNT, endIndex);
+						continue;
+					} else if ((startIndex = line.indexOf("<version>")) != -1) {
+						infoCount++;
+						endIndex = line.indexOf("</version>");
+						version = line.substring(startIndex + VERSIONCOUNT, endIndex);
+						continue;
+					}
+					if (infoCount == 3) {
+						StringBuilder infoSb = new StringBuilder();
+						infoSb.append(" -DgroupId=").append(groupId);
+						infoSb.append(" -DartifactId=").append(artifactId);
+						infoSb.append(" -Dversion=").append(version);
+						mvnInfo = infoSb.toString();
+						break;
+					}
+				}
+				if(line.indexOf("</parent>") != -1){
+					parentFlag = false;
 				}
 			}
 

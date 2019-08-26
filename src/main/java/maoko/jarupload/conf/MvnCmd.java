@@ -40,7 +40,7 @@ public class MvnCmd {
 		BASE_CMD_STR = DOS_CMD.replace("{1}", settingsXml)//
 				.replace("{2}", AppUploadJar.appConf.repository_durl)//
 				.replace("{3}", AppUploadJar.appConf.repository_id);
-		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("/c mvn", "/c mvn -e -X");
+		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("mvn -s", "mvn -e -X -s");
 		// setLocalMvn(runPath);
 	}
 
@@ -80,8 +80,9 @@ public class MvnCmd {
 		StringBuilder cmd = null;
 		if (withFull) {
 			cmd = new StringBuilder(MvnCmd.BASE_CMD_STR_FULL);
-		} else
+		} else {
 			cmd = new StringBuilder(MvnCmd.BASE_CMD_STR);
+		}
 		if (jar != null) {
 			cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
 			cmd.append(" -Dpackaging=jar");

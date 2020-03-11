@@ -7,6 +7,8 @@ import java.io.IOException;
 import maoko.jarupload.AppUploadJar;
 import maoko.jarupload.AsyncStreamPrint;
 import maoko.jarupload.TheadPoolExc;
+import maoko.jarupload.sys.os.EOsType;
+import maoko.jarupload.sys.os.OSPlatformUtil;
 
 /**
  * @dscr mvn 命令
@@ -15,7 +17,7 @@ import maoko.jarupload.TheadPoolExc;
  *
  */
 public class MvnCmd {
-	private static final String DOS_CMD = "cmd /c mvn" //
+	private static String DOS_CMD = "mvn" //
 			+ " -s {1}" //
 			+ "  deploy:deploy-file"//
 			+ " -Durl={2}"//
@@ -29,10 +31,16 @@ public class MvnCmd {
 	public static void init() throws IOException, InterruptedException {
 		DOSCMD_EXCUTOR = Runtime.getRuntime();
 		String settingsXml = MvnSettings.SETTINGS_PATH;
+		EOsType ostype = OSPlatformUtil.getOSType();
+		if (EOsType.Linux == ostype || EOsType.Mac_OS_X == ostype) {
+			//skip
+		} else if (EOsType.Windows == ostype) {
+			DOS_CMD = "cmd /c " + DOS_CMD;
+		}
 		BASE_CMD_STR = DOS_CMD.replace("{1}", settingsXml)//
 				.replace("{2}", AppUploadJar.appConf.repository_durl)//
 				.replace("{3}", AppUploadJar.appConf.repository_id);
-		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("/c mvn", "/c mvn -e -X");
+		BASE_CMD_STR_FULL = BASE_CMD_STR.replace("mvn -s", "mvn -e -X -s");
 		// setLocalMvn(runPath);
 	}
 
@@ -72,8 +80,9 @@ public class MvnCmd {
 		StringBuilder cmd = null;
 		if (withFull) {
 			cmd = new StringBuilder(MvnCmd.BASE_CMD_STR_FULL);
-		} else
+		} else {
 			cmd = new StringBuilder(MvnCmd.BASE_CMD_STR);
+		}
 		if (jar != null) {
 			cmd.append(" -Dfile=").append(jar.getName());// 当有bundle类型时，下面的配置可以保证上传的jar包后缀为.jar
 			cmd.append(" -Dpackaging=jar");

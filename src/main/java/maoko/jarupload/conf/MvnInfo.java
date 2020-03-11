@@ -8,6 +8,9 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
  * @dscr 文件mvn信息
@@ -35,49 +38,44 @@ public class MvnInfo {
 
 	private File pom;
 
-	public MvnInfo(File pom) {
-		this.pom = pom;
-	}
+	public MvnInfo(File pom) {this.pom = pom;}
 
 	private final static int GROUPIDCOUNT = "<groupId>".length();
 	private final static int ARTIFACTIDCOUNT = "<artifactId>".length();
 	private final static int VERSIONCOUNT = "<version>".length();
 
-	public String readInfo() throws FileNotFoundException, IOException {
+//	TODO: 改成model解析
+	public String readInfo() throws FileNotFoundException, IOException, XmlPullParserException {
 		String mvnInfo = "";
-		int infoCount = 0;
-		List<String> lines = IOUtils.readLines(new FileInputStream(pom), Charset.forName("utf-8"));
-		if (lines != null) {
-			for (String line : lines) {
-				line = line.trim();
-				int startIndex = -1;
-				int endIndex = -1;
-				if ((startIndex = line.indexOf("<groupId>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</groupId>");
-					groupId = line.substring(startIndex + GROUPIDCOUNT, endIndex);
-					continue;
-				} else if ((startIndex = line.indexOf("<artifactId>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</artifactId>");
-					artifactId = line.substring(startIndex + ARTIFACTIDCOUNT, endIndex);
-					continue;
-				} else if ((startIndex = line.indexOf("<version>")) != -1) {
-					infoCount++;
-					endIndex = line.indexOf("</version>");
-					version = line.substring(startIndex + VERSIONCOUNT, endIndex);
-					continue;
-				}
-				if (infoCount == 3) {
-					StringBuilder infoSb = new StringBuilder();
-					infoSb.append(" -DgroupId=").append(groupId);
-					infoSb.append(" -DartifactId=").append(artifactId);
-					infoSb.append(" -Dversion=").append(version);
-					mvnInfo = infoSb.toString();
-					break;
-				}
-			}
+		FileInputStream fis = new FileInputStream(pom);
+		MavenXpp3Reader reader = new MavenXpp3Reader();
+		Model model = reader.read(fis);
 
+		groupId = model.getGroupId();
+		if(groupId == null || groupId.isEmpty())
+		{
+			groupId = model.getParent().getGroupId();
+		}
+
+		artifactId = model.getArtifactId();
+		if(artifactId ==null || artifactId.isEmpty())
+		{
+			artifactId=model.getParent().getArtifactId();
+		}
+
+		version = model.getVersion();
+		if(version == null || version.isEmpty())
+		{
+			version = model.getParent().getVersion();
+		}
+
+		if(!groupId.isEmpty() && !artifactId.isEmpty() && !version.isEmpty())
+		{
+			StringBuilder infoSb = new StringBuilder();
+			infoSb.append(" -DgroupId=").append(groupId);
+			infoSb.append(" -DartifactId=").append(artifactId);
+			infoSb.append(" -Dversion=").append(version);
+			mvnInfo = infoSb.toString();
 		}
 
 		return mvnInfo;
@@ -89,10 +87,10 @@ public class MvnInfo {
 		try {
 			System.out.println(info.readInfo());
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (XmlPullParserException e) {
 			e.printStackTrace();
 		}
 	}
